@@ -116,6 +116,9 @@ li{margin:5px 0}li::marker{color:var(--pink)}
 .cell.open b{color:var(--navy)}
 .cell.open:hover{transform:translateY(-2px)}
 .cell.done{background:var(--navy);border-color:var(--navy);color:#fff}
+.cell.lost{background:#fff3f2;border:2px solid #c0392b;color:#c0392b}
+.cell.lost b{color:var(--navy)}
+.cell.lost.today::after{background:#c0392b}
 .cell.we{background:var(--sky);border-color:#cfe0f1;color:var(--navy2)}
 .cell.we:hover{transform:translateY(-2px)}
 .cell.locked{background:#eef3f9;border-color:#e1e9f2;color:#8496aa;cursor:default}
@@ -269,6 +272,7 @@ li{margin:5px 0}li::marker{color:var(--pink)}
 <div class="legend">
 <span><svg viewBox="0 0 24 24" style="color:var(--pink)" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8h14v-8"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg>ouvert</span>
 <span><svg viewBox="0 0 24 24" style="color:var(--navy)" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>résolu</span>
+<span><svg viewBox="0 0 24 24" style="color:#c0392b" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>perdu</span>
 <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>pas encore</span>
 <span><svg viewBox="0 0 24 24" style="color:var(--navy2)" aria-hidden="true"><path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/></svg>astuce du week-end</span>
 </div>
@@ -328,7 +332,7 @@ async function call(fn,...a){
 }
 const store={get(k){try{return localStorage.getItem(k)||""}catch(e){return ""}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const YEAR=2026;
-const IC={gift:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8h14v-8"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg>',check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',leaf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/></svg>',tree:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M12 16v5"/></svg>'};
+const IC={cross:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',gift:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8h14v-8"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg>',check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',leaf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/></svg>',tree:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M12 16v5"/></svg>'};
 const PANEL=document.createElement("div");PANEL.id="panel";
 let homeView=false;
 let B=null, me=store.get("sv_me"), P={solved:[],facts:[]}, sel=null;
@@ -453,7 +457,7 @@ $("rGo").onclick=async()=>{
 };
 async function setMe(n){
  me=n;store.set("sv_me",n);
- try{P=await call("progress",n)}catch(e){P={solved:[],facts:[]}}
+ try{P=await call("progress",n)}catch(e){P={solved:[],lost:[],facts:[]}}
  const p=B.players.find(x=>x.name===n);
  applyWho();
  $("me").innerHTML="";
@@ -478,12 +482,12 @@ function renderGrid(){
  if(PANEL.parentNode)PANEL.parentNode.removeChild(PANEL);
  for(let d=1;d<=24;d++){
   const st=B.days[d];const b=document.createElement("button");b.className="cell";
-  const done=P.solved.includes(d);
-  let ico=IC.lock;if(st==="we")ico=d===24?IC.tree:IC.leaf;else if(st==="open")ico=done?IC.check:IC.gift;
+  const done=P.solved.includes(d),lost=!done&&(P.lost||[]).includes(d);
+  let ico=IC.lock;if(st==="we")ico=d===24?IC.tree:IC.leaf;else if(st==="open")ico=done?IC.check:lost?IC.cross:IC.gift;
   b.innerHTML="<b>"+d+"</b><span>"+ico+"</span>";
-  b.classList.add(st==="locked"?"locked":st==="we"?"we":done?"done":"open");
+  b.classList.add(st==="locked"?"locked":st==="we"?"we":done?"done":lost?"lost":"open");
   if(sel===d)b.classList.add("sel");
-  b.setAttribute("aria-label","Jour "+d);
+  b.setAttribute("aria-label","Jour "+d+(done?" résolu":lost?" perdu":""));
   {const n=new Date();if(n.getFullYear()===YEAR&&n.getMonth()===11&&n.getDate()===d)b.classList.add("today")}
   b.onclick=()=>{if(st!=="locked"&&me){sel=(sel===d)?null:d;renderGrid();renderPanel();if(sel&&PANEL.scrollIntoView)try{PANEL.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}};
   g.appendChild(b);
@@ -523,7 +527,7 @@ async function renderPanel(){
   try{
    const r=await call("submit",me,d,inp.value);
    if(r.ok){if(!P.solved.includes(d))P.solved.push(d);if(r.fact)P.facts.push({day:d,t:r.fact});P=await call("progress",me);row.remove();out.innerHTML="";showWin(area,r.s,r.fact);renderGrid();renderDos()}
-   else if(r.lost){row.remove();out.innerHTML="";out.appendChild(box("ko","Raté ! Perdu pour cette question : une seule tentative par énigme. Ton équipe peut encore marquer sur les autres jours."))}
+   else if(r.lost){P.lost=(P.lost||[]).concat(d);renderGrid();row.remove();out.innerHTML="";out.appendChild(box("ko","Raté ! Perdu pour cette question : une seule tentative par énigme. Ton équipe peut encore marquer sur les autres jours."))}
    else{out.innerHTML="";out.appendChild(box("ko","Pas tout à fait. Relis l'énoncé, ou demande un indice."))}
   }catch(x){out.innerHTML="";out.appendChild(box("ko",errMsg(x)))}
   go.disabled=false;
@@ -543,7 +547,7 @@ async function doVerdict(id,area){
   const r=await call("verdict",me,id);
   let m;
   if(r.ok){if(!P.solved.includes(sel))P.solved.push(sel);m=box("ok pre","Bravo ! "+r.epi);renderGrid()}
-  else{m=box("ko","Raté ! Ce n'est pas lui/elle : perdu pour cette question, une seule tentative.");area.querySelectorAll("button").forEach(b=>b.disabled=true)}
+  else{P.lost=(P.lost||[]).concat(sel);renderGrid();m=box("ko","Raté ! Ce n'est pas lui/elle : perdu pour cette question, une seule tentative.");area.querySelectorAll("button").forEach(b=>b.disabled=true)}
   m.classList.add("v");area.appendChild(m);
  }catch(x){const m=box("ko",errMsg(x));m.classList.add("v");area.appendChild(m)}
 }

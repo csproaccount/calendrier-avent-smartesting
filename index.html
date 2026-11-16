@@ -272,7 +272,7 @@ li{margin:5px 0}li::marker{color:var(--pink)}
 <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>pas encore</span>
 <span><svg viewBox="0 0 24 24" style="color:var(--navy2)" aria-hidden="true"><path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/></svg>astuce du week-end</span>
 </div>
-<div class="muted" style="margin-top:8px">Un jour raté se rattrape quand tu veux.</div>
+<div class="muted" style="margin-top:8px">Un jour sauté se rattrape quand tu veux, mais attention : une seule tentative par énigme.</div>
 </div>
 </section>
 
@@ -291,6 +291,7 @@ li{margin:5px 0}li::marker{color:var(--pink)}
 <li>Le jeu est volontaire : inscris-toi avant le 1er décembre. Les équipes sont tirées au sort automatiquement le 1er décembre à 2 h du matin.</li>
 <li>Une énigme s'ouvre chaque jour ouvré, du 1er au 23 décembre (17 au total, verdict compris). Compte 2 à 5 minutes.</li>
 <li>Le week-end et le 24, pas d'énigme : juste une petite astuce.</li>
+<li>Une seule tentative par énigme : une mauvaise réponse, c'est perdu pour cette question (un indice est disponible avant de répondre).</li>
 <li>Quatre énigmes (4, 11, 18 et 22 décembre) donnent un indice sur le coupable. Le 23, tu le désignes.</li>
 <li>Tu joues seul·e, au bureau ou à distance, mais tes points vont à ton équipe de 5. Parlez-en dans le canal dédié !</li>
 </ul></div>
@@ -504,11 +505,13 @@ async function renderPanel(){
  c.append(ty,h,q,area);
  if(e.final){
   if(e.solved){area.appendChild(box("ok pre","Bravo ! "+e.epi));return}
+  if(e.lost){area.appendChild(box("ko","Perdu : tu as déjà désigné un suspect, et ce n'était pas le bon. Une seule tentative."));return}
   const row=document.createElement("div");row.className="row";
   B.sus.forEach(s=>{const b=document.createElement("button");b.className="btn alt";b.textContent=s.n;b.onclick=()=>doVerdict(s.id,area);row.appendChild(b)});
   area.appendChild(row);return;
  }
  if(e.solved){showWin(area,e.s,e.fact);return}
+ if(e.lost){area.appendChild(box("ko","Perdu pour cette question : une seule tentative par énigme. Ton équipe peut encore marquer sur les autres jours."));return}
  const row=document.createElement("div");row.className="row";
  const inp=document.createElement("input");inp.placeholder="Ta réponse";inp.autocomplete="off";
  const go=document.createElement("button");go.className="btn";go.textContent="Valider";
@@ -520,6 +523,7 @@ async function renderPanel(){
   try{
    const r=await call("submit",me,d,inp.value);
    if(r.ok){if(!P.solved.includes(d))P.solved.push(d);if(r.fact)P.facts.push({day:d,t:r.fact});P=await call("progress",me);row.remove();out.innerHTML="";showWin(area,r.s,r.fact);renderGrid();renderDos()}
+   else if(r.lost){row.remove();out.innerHTML="";out.appendChild(box("ko","Raté ! Perdu pour cette question : une seule tentative par énigme. Ton équipe peut encore marquer sur les autres jours."))}
    else{out.innerHTML="";out.appendChild(box("ko","Pas tout à fait. Relis l'énoncé, ou demande un indice."))}
   }catch(x){out.innerHTML="";out.appendChild(box("ko",errMsg(x)))}
   go.disabled=false;
@@ -539,7 +543,7 @@ async function doVerdict(id,area){
   const r=await call("verdict",me,id);
   let m;
   if(r.ok){if(!P.solved.includes(sel))P.solved.push(sel);m=box("ok pre","Bravo ! "+r.epi);renderGrid()}
-  else m=box("ko","Ce n'est pas lui/elle. Retourne voir ton dossier : quels suspects sont barrés ?");
+  else{m=box("ko","Raté ! Ce n'est pas lui/elle : perdu pour cette question, une seule tentative.");area.querySelectorAll("button").forEach(b=>b.disabled=true)}
   m.classList.add("v");area.appendChild(m);
  }catch(x){const m=box("ko",errMsg(x));m.classList.add("v");area.appendChild(m)}
 }

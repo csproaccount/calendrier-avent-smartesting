@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Opération Sapin Vert</title>
+<style>
+:root{--navy:#0c3864;--navy2:#1d5a9a;--sky:#e8f1fa;--ink:#16253a;--mut:#5a6d82;--line:#d9e3ee;--bg:#f5f9fd;--pink:#e41080;--green:#1f9d6b;--red:#d64545}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Montserrat",system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--navy);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.1rem;flex:1}
+header h1 em{font-style:normal;color:#ff7bbd}
+header button{background:transparent;color:#fff;border:1px solid #fff8;border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+nav{display:flex;gap:6px;flex-wrap:wrap;padding:12px 18px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+nav button{border:0;background:transparent;color:var(--navy);padding:8px 14px;border-radius:999px;font-weight:600;font-size:.9rem;font-family:inherit;cursor:pointer}
+nav button.on{background:var(--navy);color:#fff}
+main{max-width:980px;margin:0 auto;padding:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 8px 24px -18px rgba(12,56,100,.5)}
+h2{margin:0 0 10px;font-size:1.2rem;color:var(--navy)}h3{margin:0 0 8px;font-size:1rem;color:var(--navy)}
+label{display:block;font-weight:600;font-size:.82rem;color:var(--mut);margin:12px 0 4px}
+input[type=text],input[type=password],input[type=number],input[type=datetime-local],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+.btn{background:var(--pink);color:#fff;border:0;border-radius:999px;padding:10px 20px;font-weight:700;font-size:.9rem;font-family:inherit;cursor:pointer}
+.btn.alt{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.btn.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--mut);font-size:.85rem}
+.msg{padding:10px 14px;border-radius:10px;margin:10px 0;font-size:.9rem}
+.msg.ok{background:#e6f6ef;color:#14684a}.msg.ko{background:#fdeaea;color:#a02c2c}
+table{width:100%;border-collapse:collapse}
+td,th{padding:6px 4px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line);font-size:.9rem}
+td input[type=text],td select{padding:7px 9px}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px;margin-bottom:14px}
+.days button{padding:10px 0;border:1px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:.95rem;font-family:inherit;cursor:pointer;color:var(--navy)}
+.days button.on{background:var(--navy);color:#fff}
+.days button.we{background:var(--sky)}
+section{display:none}section.on{display:block}
+#login{max-width:380px;margin:60px auto}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:999px;font-size:.9rem;display:none;z-index:9}
+.toast.ko{background:var(--red)}
+</style>
+</head>
+<body>
+<div id="login" class="card">
+<h2>Admin · Opération <span style="color:var(--pink)">Sapin Vert</span></h2>
+<label for="pw">Mot de passe administrateur</label>
+<input type="password" id="pw" autocomplete="current-password">
+<div class="row" style="margin-top:14px"><button class="btn" id="go">Entrer</button></div>
+<div id="lmsg"></div>
+</div>
+
+<div id="app" style="display:none">
+<header><h1>Admin · Opération <em>Sapin Vert</em></h1><a href="./" style="color:#fff;font-size:.85rem">Voir le jeu</a><button id="logout">Se déconnecter</button></header>
+<nav id="nav">
+<button data-t="players" class="on">Participants</button>
+<button data-t="puz">Énigmes</button>
+<button data-t="txt">Textes</button>
+<button data-t="cfg">Réglages</button>
+<button data-t="board">Classement</button>
+</nav>
+<main>
+<section id="players" class="on">
+<div class="card"><h2>Participants <span class="muted" id="pcount"></span></h2>
+<p class="muted">Modifie un prénom, l'équipe ou le statut remote, puis clique sur « Enregistrer » sur la ligne. Supprimer un participant efface aussi ses points.</p>
+<table><thead><tr><th>Prénom</th><th>Remote</th><th>Équipe</th><th>Énigmes</th><th></th></tr></thead><tbody id="ptb"></tbody></table>
+</div>
+<div class="card"><h3>Ajouter un participant</h3>
+<div class="row"><input type="text" id="newName" placeholder="Prénom (+ initiale si doublon)" style="flex:1;min-width:180px" maxlength="40"><label style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="newRemote">Remote</label><button class="btn" id="addP">Ajouter</button></div>
+<div class="muted" style="margin-top:6px">Si le tirage est déjà fait, la personne rejoint l'équipe la moins nombreuse.</div>
+</div>
+</section>
+
+<section id="puz">
+<div class="card"><h2>Énigmes</h2><div class="days" id="days"></div><div id="pform"></div></div>
+</section>
+
+<section id="txt">
+<div class="card"><h2>Texte d'introduction</h2><p class="muted">Affiché en tête du dossier de l'enquête.</p><textarea id="intro" style="min-height:220px"></textarea><div class="row" style="margin-top:10px"><button class="btn" id="saveIntro">Enregistrer</button></div></div>
+<div class="card"><h2>Suspects</h2><p class="muted">Nom et description modifiables. L'identifiant ne change pas.</p><div id="susList"></div><div class="row" style="margin-top:10px"><button class="btn" id="saveSus">Enregistrer les suspects</button></div></div>
+</section>
+
+<section id="cfg">
+<div class="card"><h2>Calendrier</h2>
+<label for="cDraw">Tirage des équipes (heure de Paris)</label><input type="datetime-local" id="cDraw">
+<label for="cLaunch">Ouverture de la 1re énigme (heure de Paris)</label><input type="datetime-local" id="cLaunch">
+<label for="cSize">Taille des équipes</label><input type="number" id="cSize" min="2" max="20">
+<label for="cCode">Code d'inscription (vide = pas de code)</label><input type="text" id="cCode" maxlength="40">
+<label for="cLate">Inscription après le tirage</label><select id="cLate"><option value="true">Autorisée</option><option value="false">Fermée</option></select>
+<label for="cOne">Essais par énigme</label><select id="cOne"><option value="true">Une seule tentative (perdu si faux)</option><option value="false">Essais illimités</option></select>
+<label for="cDemo">Mode DEMO (bouton de test sur l'accueil)</label><select id="cDemo"><option value="false">Désactivé</option><option value="true">Activé</option></select>
+<div class="row" style="margin-top:14px"><button class="btn" id="saveCfg">Enregistrer les réglages</button></div>
+<div class="muted" style="margin-top:8px" id="drawState"></div>
+</div>
+<div class="card"><h2>Tirage des équipes</h2><p class="muted">Refait le tirage au sort de tous les participants. À éviter une fois le jeu commencé : les équipes changent.</p><button class="btn danger" id="redraw">Relancer le tirage</button></div>
+<div class="card"><h2>Mot de passe admin</h2>
+<label for="oldPw">Mot de passe actuel</label><input type="password" id="oldPw" autocomplete="current-password">
+<label for="newPw">Nouveau mot de passe (8 caractères min.)</label><input type="password" id="newPw" autocomplete="new-password">
+<div class="row" style="margin-top:12px"><button class="btn alt" id="chgPw">Changer</button></div></div>
+</section>
+
+<section id="board"><div class="card"><h2>Classement des équipes</h2><div id="bd"></div><div class="row" style="margin-top:10px"><button class="btn alt" id="refresh">Actualiser</button></div></div></section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL="https://iiurfriljyauymnriepr.supabase.co";
+const SB_KEY="sb_publishable_317fyB6GIeer1danik07cA_2nZgpBJh";
+const $=id=>document.getElementById(id);
+let PW="";try{PW=sessionStorage.getItem("sv_admin")||""}catch(e){}
+let O=null,Z=null,curDay=null;
+async function call(f,body){
+ let r;try{r=await fetch(SB_URL+"/rest/v1/rpc/"+f,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},body:JSON.stringify(body)})}catch(e){throw new Error("Connexion impossible. Réessaie dans un instant.")}
+ let j=null;try{j=await r.json()}catch(e){}
+ if(!r.ok)throw new Error((j&&j.message)||"Erreur");
+ return j;
+}
+const adm=(f,b)=>call(f,Object.assign({p_pw:PW},b||{}));
+let tt=null;
+function toast(m,ko){const t=$("toast");t.textContent=m;t.className="toast"+(ko?" ko":"");t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>t.style.display="none",3200)}
+const err=e=>(e&&e.message)||"Erreur";
+function mk(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});kids.forEach(k=>e.append(k));return e}
+
+async function enter(){
+ try{await adm("sv_admin_login");try{sessionStorage.setItem("sv_admin",PW)}catch(e){}
+  $("login").style.display="none";$("app").style.display="";await loadAll()}
+ catch(e){PW="";try{sessionStorage.removeItem("sv_admin")}catch(x){}$("login").style.display="";$("app").style.display="none";$("lmsg").innerHTML="";$("lmsg").appendChild(mk("div",{className:"msg ko",textContent:err(e)}))}
+}
+$("go").onclick=()=>{PW=$("pw").value;enter()};
+$("pw").onkeydown=e=>{if(e.key==="Enter")$("go").click()};
+$("logout").onclick=()=>{PW="";try{sessionStorage.removeItem("sv_admin")}catch(e){}location.reload()};
+if(PW)enter();
+
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("on",x===b));
+ document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on",s.id===b.dataset.t));
+});
+async function loadAll(){
+ try{O=await adm("sv_admin_overview");Z=await adm("sv_admin_puzzles")}catch(e){toast(err(e),true);return}
+ renderPlayers();renderPuz();renderTxt();renderCfg();renderBoard();
+}
+
+// ---- Participants
+function renderPlayers(){
+ const tb=$("ptb");tb.innerHTML="";
+ $("pcount").textContent="("+O.players.length+")";
+ O.players.forEach(p=>{
+  const tr=mk("tr");
+  const nm=mk("input",{type:"text",value:p.name,maxLength:40});
+  const rm=mk("input",{type:"checkbox",checked:p.remote});
+  const tm=mk("select");tm.append(mk("option",{value:"",textContent:"— aucune —"}));
+  O.teams.forEach(t=>tm.append(mk("option",{value:t,textContent:t,selected:t===p.team})));
+  const sv=mk("button",{className:"btn alt",textContent:"Enregistrer"});
+  const del=mk("button",{className:"btn danger",textContent:"Supprimer"});
+  sv.onclick=async()=>{try{toast(await adm("sv_admin_player_save",{p_old:p.name,p_new:nm.value,p_remote:rm.checked,p_team:tm.value}));await loadAll()}catch(e){toast(err(e),true)}};
+  del.onclick=async()=>{if(!confirm("Supprimer "+p.name+" et ses points ?"))return;try{toast(await adm("sv_admin_player_delete",{p_name:p.name}));await loadAll()}catch(e){toast(err(e),true)}};
+  [nm,rm,tm].forEach((el,i)=>{const td=mk("td");td.append(el);tr.append(td)});
+  tr.append(mk("td",{textContent:String(p.solved)}));
+  const td=mk("td");td.append(sv," ",del);tr.append(td);tb.append(tr);
+ });
+}
+$("addP").onclick=async()=>{
+ try{toast(await adm("sv_admin_player_save",{p_old:null,p_new:$("newName").value,p_remote:$("newRemote").checked,p_team:null}));$("newName").value="";$("newRemote").checked=false;await loadAll()}catch(e){toast(err(e),true)}
+};
+
+// ---- Énigmes
+function renderPuz(){
+ const d=$("days");d.innerHTML="";
+ Z.puzzles.forEach(p=>{const b=mk("button",{textContent:String(p.day),className:(p.kind==="we"?"we ":"")+(curDay===p.day?"on":"")});b.title=p.kind==="we"?"Astuce":p.title||"";b.onclick=()=>{curDay=p.day;renderPuz()};d.append(b)});
+ const f=$("pform");f.innerHTML="";
+ const p=Z.puzzles.find(x=>x.day===curDay);
+ if(!p){f.append(mk("div",{className:"muted",textContent:"Choisis un jour. Les jours en bleu clair sont des astuces (week-end, 24)."}));return}
+ const F={};
+ const add=(key,label,val,ta,hint)=>{
+  f.append(mk("label",{textContent:label}));
+  const el=ta?mk("textarea",{value:val||""}):mk("input",{type:"text",value:val||""});
+  F[key]=el;f.append(el);if(hint)f.append(mk("div",{className:"muted",textContent:hint}));
+ };
+ f.append(mk("h3",{textContent:p.kind==="we"?"Jour "+p.day+" · astuce":p.kind==="final"?"Jour "+p.day+" · le verdict":"Jour "+p.day+" · énigme "+p.n}));
+ if(p.kind==="we"){add("q","Texte de l'astuce",p.q,true)}
+ else{
+  add("title","Titre",p.title);add("type","Type d'énigme",p.type);
+  add("q","Énoncé",p.q,true);
+  add("hint","Indice (bouton « Un indice ? »)",p.hint);
+  if(p.kind==="final"){
+   f.append(mk("label",{textContent:"Le coupable"}));
+   const sel=mk("select");(Z.sus||[]).forEach(s=>sel.append(mk("option",{value:s.id,textContent:s.n,selected:s.id===(p.answers||[])[0]})));F.answer=sel;f.append(sel);
+   add("story","Épilogue affiché si le joueur trouve",p.story,true);
+  }else{
+   add("answers","Réponses acceptées (séparées par des virgules)",(p.answers||[]).join(", "),false,"Accents, majuscules et espaces sont ignorés : « Dix, 10 » accepte « DIX » et « 10 ».");
+   add("story","Texte affiché après la bonne réponse",p.story,true);
+   add("fact","Indice ajouté au dossier (laisser vide si aucun)",p.fact,true);
+   add("fact_out","Suspects écartés par cet indice (identifiants séparés par des virgules)",(p.fact_out||[]).join(", "),false,"Identifiants : "+(Z.sus||[]).map(s=>s.id).join(", "));
+  }
+ }
+ const row=mk("div",{className:"row",style:"margin-top:14px"});
+ const sv=mk("button",{className:"btn",textContent:"Enregistrer"});
+ sv.onclick=async()=>{
+  const data={};
+  Object.keys(F).forEach(k=>{const v=F[k].value;data[k]=(k==="answers"||k==="fact_out")?v.split(",").map(x=>x.trim()).filter(Boolean):v});
+  try{toast(await adm("sv_admin_puzzle_save",{p_day:p.day,p_data:data}));Z=await adm("sv_admin_puzzles");renderPuz()}catch(e){toast(err(e),true)}
+ };
+ row.append(sv);f.append(row);
+}
+
+// ---- Textes
+function renderTxt(){
+ $("intro").value=typeof Z.intro==="string"?Z.intro:"";
+ const l=$("susList");l.innerHTML="";window.SUS=[];
+ (Z.sus||[]).forEach(s=>{
+  const n=mk("input",{type:"text",value:s.n}),d=mk("textarea",{value:s.d,style:"min-height:64px"});
+  window.SUS.push({id:s.id,n,d});
+  l.append(mk("label",{textContent:"Suspect · "+s.id}),n,d);
+ });
+}
+$("saveIntro").onclick=async()=>{try{toast(await adm("sv_admin_content_save",{p_key:"intro",p_value:$("intro").value}))}catch(e){toast(err(e),true)}};
+$("saveSus").onclick=async()=>{
+ const v=window.SUS.map(s=>({id:s.id,n:s.n.value.trim(),d:s.d.value.trim()}));
+ if(v.some(s=>!s.n)){toast("Chaque suspect a besoin d'un nom.",true);return}
+ try{toast(await adm("sv_admin_content_save",{p_key:"sus",p_value:v}));Z=await adm("sv_admin_puzzles");renderPuz()}catch(e){toast(err(e),true)}
+};
+
+// ---- Réglages
+function renderCfg(){
+ const c=O.config;
+ $("cDraw").value=c.draw_at;$("cLaunch").value=c.launch_at;$("cSize").value=c.team_size;$("cCode").value=c.reg_code;
+ $("cLate").value=c.late_join;$("cOne").value=c.one_try;$("cDemo").value=c.demo_enabled;
+ $("drawState").textContent=c.draw_done==="true"?"Le tirage des équipes a déjà eu lieu.":"Le tirage n'a pas encore eu lieu : il se fera automatiquement à l'heure indiquée.";
+}
+$("saveCfg").onclick=async()=>{
+ const pairs=[["draw_at",$("cDraw").value],["launch_at",$("cLaunch").value],["team_size",$("cSize").value],["reg_code",$("cCode").value],["late_join",$("cLate").value],["one_try",$("cOne").value],["demo_enabled",$("cDemo").value]];
+ try{for(const [k,v] of pairs){await adm("sv_admin_config_save",{p_key:k,p_value:v})}toast("Réglages enregistrés.");await loadAll()}catch(e){toast(err(e),true)}
+};
+$("redraw").onclick=async()=>{
+ if(!confirm("Refaire le tirage ? Les équipes actuelles seront remplacées."))return;
+ try{toast(await adm("sv_admin_draw"));await loadAll()}catch(e){toast(err(e),true)}
+};
+$("chgPw").onclick=async()=>{
+ try{toast(await call("sv_admin_change_password",{p_pw:$("oldPw").value,p_new:$("newPw").value}));PW=$("newPw").value;try{sessionStorage.setItem("sv_admin",PW)}catch(e){}$("oldPw").value=$("newPw").value=""}catch(e){toast(err(e),true)}
+};
+
+// ---- Classement
+function renderBoard(){
+ const b=$("bd");b.innerHTML="";const L=(O.leaderboard&&O.leaderboard.teams)||[];
+ if(!L.length){b.append(mk("div",{className:"muted",textContent:"Aucune équipe pour l'instant."}));return}
+ const t=mk("table");t.innerHTML="<thead><tr><th>#</th><th>Équipe</th><th>Joueurs</th><th>Énigmes</th><th>Jours complets</th><th>Coupable</th><th>Score</th></tr></thead>";
+ const tb=mk("tbody");
+ L.forEach((x,i)=>{const tr=mk("tr");[i+1,x.team,x.size,x.solved,x.fullDays,x.found,x.score].forEach(v=>tr.append(mk("td",{textContent:String(v)})));tb.append(tr)});
+ t.append(tb);b.append(t);
+}
+$("refresh").onclick=loadAll;
+</script>
+</body>
+</html>

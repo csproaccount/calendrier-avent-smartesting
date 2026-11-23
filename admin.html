@@ -60,6 +60,7 @@ section{display:none}section.on{display:block}
 <button data-t="txt">Textes</button>
 <button data-t="cfg">Réglages</button>
 <button data-t="board">Classement</button>
+<button data-t="prev">Aperçu du jeu</button>
 </nav>
 <main>
 <section id="players" class="on">
@@ -101,6 +102,10 @@ section{display:none}section.on{display:block}
 <div class="row" style="margin-top:12px"><button class="btn alt" id="chgPw">Changer</button></div></div>
 </section>
 
+<section id="prev"><div class="card"><h2>Tester le jeu</h2>
+<p>L'aperçu ouvre le vrai jeu avec <b>toutes les cases ouvertes</b> (énigmes, astuces du week-end et verdict), pour que tu puisses l'essayer comme un joueur.</p>
+<ul class="muted"><li>Rien n'est enregistré dans la base : les vrais participants, les équipes et les points ne bougent pas.</li><li>Tes réponses restent dans ton navigateur. Le bouton « Recommencer » de l'aperçu remet tout à zéro.</li><li>Les énigmes utilisent les textes et réponses actuels : modifie-les dans l'onglet Énigmes, puis relance l'aperçu pour vérifier.</li></ul>
+<div class="row" style="margin-top:12px"><button class="btn" id="openPrev">Ouvrir l'aperçu du jeu</button></div></div></section>
 <section id="board"><div class="card"><h2>Classement des équipes</h2><div id="bd"></div><div class="row" style="margin-top:10px"><button class="btn alt" id="refresh">Actualiser</button></div></div></section>
 </main>
 </div>
@@ -252,6 +257,7 @@ function renderBoard(){
  t.append(tb);b.append(t);
 }
 $("refresh").onclick=loadAll;
+$("openPrev").onclick=()=>{window.open("./index.html?apercu=1","_blank")};
 </script>
 </body>
 </html>

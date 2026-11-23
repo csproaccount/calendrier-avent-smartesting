@@ -423,7 +423,7 @@ function renderHome(){
  if(play){$("heroTitle").textContent="L'enquête est ouverte";$("heroText").textContent="Une énigme par jour ouvré jusqu'au 23 décembre. Bonne chasse au sapin !"}
  $("demoCard").style.display=(B.demo&&!B.demoActive)?"":"none";
  $("demoBar").style.display=B.demoActive?"block":"none";
- if(ph==="register"){$("heroTitle").textContent="L'enquête commence bientôt";$("heroText").textContent="Le sapin du bureau a disparu… Cinq suspects, un seul coupable.\nInscris-toi ci-dessous : les équipes seront tirées au sort avant le démarrage du jeu, et la première énigme s'ouvrira le "+fmtDate(B.launchAtMs)+"."}
+ if(ph==="register"){$("heroTitle").textContent="L'enquête commence bientôt";$("heroText").textContent="Le sapin du bureau a disparu… Cinq suspects, un seul coupable.\nInscris-toi ci-dessous : les équipes seront tirées au sort avant le démarrage du jeu et la première énigme s'ouvrira le "+fmtDate(B.launchAtMs)+" !"}
  else if(ph==="teams"){$("heroTitle").textContent="Les équipes sont formées !";$("heroText").textContent="Découvre tes équipiers ci-dessous. La première énigme s'ouvre le "+fmtDate(B.launchAtMs)+"."}
  // inscription
  const regd=store.get("sv_reg");

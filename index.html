@@ -30,11 +30,11 @@ header.top::after{background-image:radial-gradient(circle,#bcd0e5 0 2.5px,transp
 @keyframes fall{to{background-position:0 170px,40px 140px}}
 header.top>*{position:relative;z-index:1}
 .flake{position:absolute!important;color:var(--snow);opacity:.75;z-index:0!important}
-.bauble{position:absolute!important;top:0;z-index:0!important;transform-origin:50% 0;animation:sway 6s ease-in-out infinite alternate}
+.bauble{position:absolute!important;top:0;z-index:0!important;transform-origin:50% 0;animation:sway 3.4s cubic-bezier(.37,0,.63,1) infinite alternate}
 .bauble svg{display:block;overflow:visible}
-.b1{left:9%;animation-delay:-1s}.b2{left:17%;animation-delay:-3s;animation-duration:7s}
-.b3{right:16%;animation-delay:-2s;animation-duration:5.5s}.b4{right:7%;animation-delay:-4s;animation-duration:6.5s}
-@keyframes sway{from{transform:rotate(-3.5deg)}to{transform:rotate(3.5deg)}}
+.b1{left:9%;animation-delay:-1s;animation-duration:3.2s}.b2{left:17%;animation-delay:-2.2s;animation-duration:4.1s}
+.b3{right:16%;animation-delay:-1.4s;animation-duration:3.7s}.b4{right:7%;animation-delay:-2.8s;animation-duration:4.4s}
+@keyframes sway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
 .logo{display:inline-block;margin-bottom:12px;cursor:pointer}
 .logo img{display:block;height:40px;width:auto}
 .kicker{font-family:var(--serif);font-size:1.05rem;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);font-weight:500}

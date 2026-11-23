@@ -259,7 +259,7 @@ li{margin:5px 0}li::marker{color:var(--pink)}
 <ul class="feat">
 <li><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></span><span>Un sapin disparu, cinq suspects, un seul coupable.</span></li>
 <li><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><span>Une énigme par jour ouvré, du 1er au 23 décembre (2 à 5 minutes).</span></li>
-<li><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.8-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 2 4.5 5"/></svg></span><span>Tu joues seul·e, tes points vont à ton équipe de 5, tirée au sort.</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.8-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 2 4.5 5"/></svg></span><span>Tu joues seul·e, tes points vont à ton équipe, tirée au sort.</span></li>
 <li><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8h14v-8"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg></span><span>Des cadeaux à gagner, et une grande récompense pour l'équipe la plus investie.</span></li>
 </ul>
 </div>
@@ -293,12 +293,12 @@ li{margin:5px 0}li::marker{color:var(--pink)}
 
 <section id="reg">
 <div class="card"><h2>Comment ça marche</h2><ul>
-<li>Le jeu est volontaire : inscris-toi avant le 1er décembre. Les équipes sont tirées au sort automatiquement le 1er décembre à 2 h du matin.</li>
+<li>Le jeu est volontaire : inscris-toi avant le 30 novembre à minuit. Les équipes sont tirées au sort avant le démarrage du jeu, le 1er décembre à 8 h 00.</li>
 <li>Une énigme s'ouvre chaque jour ouvré, du 1er au 23 décembre (17 au total, verdict compris). Compte 2 à 5 minutes.</li>
 <li>Le week-end et le 24, pas d'énigme : juste une petite astuce.</li>
 <li>Une seule tentative par énigme : une mauvaise réponse, c'est perdu pour cette question (un indice est disponible avant de répondre).</li>
 <li>Quatre énigmes (4, 11, 18 et 22 décembre) donnent un indice sur le coupable. Le 23, tu le désignes.</li>
-<li>Tu joues seul·e, au bureau ou à distance, mais tes points vont à ton équipe de 5. Parlez-en dans le canal dédié !</li>
+<li>Tu joues seul·e, au bureau ou à distance, mais tes points vont à ton équipe. Parlez-en dans le canal dédié !</li>
 </ul></div>
 <div class="card"><h2>Points et récompenses</h2><ul>
 <li><b>1 point</b> par énigme résolue.</li>
@@ -423,7 +423,7 @@ function renderHome(){
  if(play){$("heroTitle").textContent="L'enquête est ouverte";$("heroText").textContent="Une énigme par jour ouvré jusqu'au 23 décembre. Bonne chasse au sapin !"}
  $("demoCard").style.display=(B.demo&&!B.demoActive)?"":"none";
  $("demoBar").style.display=B.demoActive?"block":"none";
- if(ph==="register"){$("heroTitle").textContent="L'enquête commence bientôt";$("heroText").textContent="Le sapin du bureau a disparu… Cinq suspects, un seul coupable.\nInscris-toi ci-dessous : les équipes seront tirées au sort le "+fmtDate(B.drawAtMs)+", et la première énigme s'ouvrira le "+fmtDate(B.launchAtMs)+"."}
+ if(ph==="register"){$("heroTitle").textContent="L'enquête commence bientôt";$("heroText").textContent="Le sapin du bureau a disparu… Cinq suspects, un seul coupable.\nInscris-toi ci-dessous : les équipes seront tirées au sort avant le démarrage du jeu, et la première énigme s'ouvrira le "+fmtDate(B.launchAtMs)+"."}
  else if(ph==="teams"){$("heroTitle").textContent="Les équipes sont formées !";$("heroText").textContent="Découvre tes équipiers ci-dessous. La première énigme s'ouvre le "+fmtDate(B.launchAtMs)+"."}
  // inscription
  const regd=store.get("sv_reg");
@@ -433,7 +433,7 @@ function renderHome(){
  $("rCodeRow").style.display=B.regCode?"":"none";
  const showDone=!!regd&&ph==="register";
  $("regForm").style.display=showDone?"none":"";$("regDone").style.display=showDone?"":"none";
- if(showDone){$("regDone").innerHTML="";const m=document.createElement("div");m.className="msg ok pre";m.textContent="C'est noté, "+regd+" ! Rendez-vous le "+fmtDate(B.drawAtMs)+" pour découvrir ton équipe.";const a=document.createElement("a");a.href="#";a.textContent="Ce n'est pas moi";a.onclick=ev=>{ev.preventDefault();store.set("sv_reg","");renderHome()};const w=document.createElement("div");w.className="muted";w.style.marginTop="6px";w.appendChild(a);$("regDone").append(m,w)}
+ if(showDone){$("regDone").innerHTML="";const m=document.createElement("div");m.className="msg ok pre";m.textContent="C'est noté, "+regd+" ! Rendez-vous le "+fmtDate(B.launchAtMs)+" : tu découvriras ton équipe et la première énigme.";const a=document.createElement("a");a.href="#";a.textContent="Ce n'est pas moi";a.onclick=ev=>{ev.preventDefault();store.set("sv_reg","");renderHome()};const w=document.createElement("div");w.className="muted";w.style.marginTop="6px";w.appendChild(a);$("regDone").append(m,w)}
  $("regCount").textContent=B.registered>0?(B.registered+" personne"+(B.registered>1?"s":"")+" déjà inscrite"+(B.registered>1?"s":"")):"";
  // équipe
  const tc=$("teamCard");
